@@ -93,21 +93,24 @@ stopCluster(cl)
 ### Zip files ##################################################################
 ################################################################################
 
-list.folder <- list.dirs(path = zip.folder, 
-                         recursive = FALSE)
+### Won't work in win8.1
 
-list.folder
 
-f <- list.folder[1]
-
-registerDoParallel(cl <- makeCluster(ncores))
-foreach(f = list.folder, .packages = lib) %dopar% {
-  
-  list.zipfiles <- list.files(path = f,
-                              recursive = TRUE)
-  
-  zip(paste0(f,"_checked",".zip"), 
-      list.zipfiles, 
-      zip = Sys.getenv("R_ZIPCMD", "zip"))
-}
-stopCluster(cl)
+# list.folder <- list.dirs(path = zip.folder, 
+#                          recursive = FALSE)
+# 
+# list.folder
+# 
+# # f <- list.folder[1]
+# 
+# registerDoParallel(cl <- makeCluster(ncores))
+# foreach(f = list.folder, .packages = lib) %dopar% {
+#   
+#   list.zipfiles <- list.files(path = f,
+#                               recursive = TRUE)
+#   
+#   zip(paste0(f,"_checked",".zip"), 
+#       list.zipfiles, 
+#       zip = "zip")
+# }
+# stopCluster(cl)
