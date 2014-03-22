@@ -1,7 +1,8 @@
 ################################################################################
 ## schmingo's R snippets                                                      ##
 ##                                                                            ##
-## Unzip a file and check every containing file for duplicate lines           ##
+## Unzip files and remove all duplicate lines for each containing file.       ##
+## Corrected files will be moved to a separate folder.                        ##
 ##                                                                            ##
 ##                                                                            ##
 ## Author: Simon Schlauss (sschlauss@gmail.com)                               ##
@@ -22,10 +23,7 @@ setwd("D:/BEXIS/duplicate_test/")
 
 ## Set folders
 zip.folder <- "D:/BEXIS/duplicate_test/"
-unique.folder <- "D:/BEXIS/unique/"
-
-## Create new dir
-# dir.create(unique.folder)
+corrected.folder <- "D:/BEXIS/corrected/"
 
 
 ################################################################################
@@ -56,24 +54,25 @@ stopCluster(cl)
 ################################################################################
 
 list.fls <- list.files(path = zip.folder,
-                       pattern = "",
+                       pattern = ".txt|.dat",
                        full.names = TRUE,
                        recursive = TRUE)
 list.fls
 
 
-# c <- list.fls[1]  ## use for testing
+c <- list.fls[1]  ## use for testing
 
 registerDoParallel(cl <- makeCluster(ncores))
 foreach(c = list.fls, .packages = lib) %dopar% {
   
   ## Read file
   to_check <- read.csv(c,
-                    quote = "",
-                    header = TRUE,
-                    sep = ",")
+                       quote = "",
+                       header = TRUE,
+                       sep = ",",
+                       na.strings = "nan")
   
-  ## Get unique lines
+  ## Get corrected lines
   to_check.unique <- unique(to_check)
   
   nrow(to_check)
@@ -81,26 +80,26 @@ foreach(c = list.fls, .packages = lib) %dopar% {
   
   if (nrow(to_check)!=nrow(to_check.unique)) ## only replace changed files
     write.csv(to_check.unique,
-              # file = paste0(unique.folder,substr(c, nchar(zip.folder)+2, nchar(c))),  ## doesn't work yet, dir-tree does not exist.
-              file = paste0(c, ".unique"),
+              file = paste0(c, ".corrected"),
               row.names = FALSE,
-              quote = FALSE)
+              quote = FALSE,
+              na = "nan")
 }
 stopCluster(cl)
 
+
 ################################################################################
-### Move unique files ##########################################################
+### Move corrected files #######################################################
 ################################################################################
 
+## List corrected files
+list.corrected <- list.files(path = zip.folder,
+                             pattern = "txt.corrected",
+                             full.names = TRUE,
+                             recursive = TRUE)
+list.corrected
 
-list.unique <- list.files(path = zip.folder,
-                       pattern = ".unique",
-                       full.names = TRUE,
-                       recursive = TRUE)
-
-list.unique
-
-
+## Renaming function
 func.file.rename <- function(from, to) {
   todir <- dirname(to)
   if (!isTRUE(file.info(todir)$isdir)) dir.create(todir, recursive=TRUE)
@@ -109,12 +108,12 @@ func.file.rename <- function(from, to) {
 
 
 registerDoParallel(cl <- makeCluster(ncores))
-foreach (u = list.unique, .packages = lib) %dopar% {
+foreach (u = list.corrected, .packages = lib) %dopar% {
   
   b.file <- unlist(strsplit(dirname(u), "/"))
   
   func.file.rename(from = u,
-                   to = paste(unique.folder,
+                   to = paste(corrected.folder,
                               b.file[6],
                               basename(u),sep = "/"))
 }
@@ -122,20 +121,22 @@ stopCluster(cl)
 
 
 ################################################################################
-### Remove .unique #############################################################
+### Remove .corrected ##########################################################
 ################################################################################
 
-list.unique2 <- list.files(path = unique.folder,
-                          pattern = ".unique",
-                          full.names = TRUE,
-                          recursive = TRUE)
+## List corrected files
+list.corrected2 <- list.files(path = corrected.folder,
+                              pattern = ".corrected",
+                              full.names = TRUE,
+                              recursive = TRUE)
+list.corrected2
 
-list.unique2
-
+## Rename corrected files
 registerDoParallel(cl <- makeCluster(ncores))
-foreach (u2 = list.unique2, .packages = lib) %dopar% {
+foreach (u2 = list.corrected2, .packages = lib) %dopar% {
+  
   file.rename(u2,
               paste0(substr(u2, 1, nchar(u2)-11), ".dat")
-              )
+  )
 }
 stopCluster(cl)

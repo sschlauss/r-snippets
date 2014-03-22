@@ -1,7 +1,8 @@
 ################################################################################
 ## schmingo's R snippets                                                      ##
 ##                                                                            ##
-## Unzip a file and check every containing file for duplicate lines           ##
+## Unzip files and remove all duplicate lines for each containing file.       ##
+## Corrected files will be replaced.                                          ##
 ##                                                                            ##
 ##                                                                            ##
 ## Author: Simon Schlauss (sschlauss@gmail.com)                               ##
@@ -69,9 +70,10 @@ foreach(c = list.fls, .packages = lib) %dopar% {
   
   ## Read file
   to_check <- read.csv(c,
-                    quote = "",
-                    header = TRUE,
-                    sep = ",")
+                       quote = "",
+                       header = TRUE,
+                       sep = ",",
+                       na.strings = "nan")
   
   ## Get unique lines
   to_check.unique <- unique(to_check)
@@ -81,10 +83,10 @@ foreach(c = list.fls, .packages = lib) %dopar% {
   
   if (nrow(to_check)!=nrow(to_check.unique)) ## only replace changed files
     write.csv(to_check.unique,
-              # file = paste0(unique.folder,substr(c, nchar(zip.folder)+2, nchar(c))),  ## doesn't work yet, dir-tree does not exist.
               file = c,
               row.names = FALSE,
-              quote = FALSE)
+              quote = FALSE,
+              na = "nan")
 }
 stopCluster(cl)
 
