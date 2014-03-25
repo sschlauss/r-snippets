@@ -94,10 +94,12 @@ stopCluster(cl)
 
 ## List corrected files
 list.corrected <- list.files(path = zip.folder,
-                             pattern = "txt.corrected",
+                             pattern = "txt.corrected|dat.corrected",
                              full.names = TRUE,
                              recursive = TRUE)
 list.corrected
+
+u <- list.corrected[1]
 
 ## Renaming function
 func.file.rename <- function(from, to) {
@@ -131,12 +133,14 @@ list.corrected2 <- list.files(path = corrected.folder,
                               recursive = TRUE)
 list.corrected2
 
+u2 <- list.corrected[1]
+
 ## Rename corrected files
 registerDoParallel(cl <- makeCluster(ncores))
 foreach (u2 = list.corrected2, .packages = lib) %dopar% {
   
   file.rename(u2,
-              paste0(substr(u2, 1, nchar(u2)-11), ".dat")
+              paste0(substr(u2, 1, nchar(u2)-14), ".dat")
   )
 }
 stopCluster(cl)
