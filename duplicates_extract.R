@@ -60,7 +60,7 @@ list.fls <- list.files(path = zip.folder,
 list.fls
 
 
-c <- list.fls[1]  ## use for testing
+# c <- list.fls[1]  ## use for testing
 
 registerDoParallel(cl <- makeCluster(ncores))
 foreach(c = list.fls, .packages = lib) %dopar% {
@@ -99,7 +99,7 @@ list.corrected <- list.files(path = zip.folder,
                              recursive = TRUE)
 list.corrected
 
-u <- list.corrected[1]
+# u <- list.corrected[1]
 
 ## Renaming function
 func.file.rename <- function(from, to) {
@@ -133,7 +133,7 @@ list.corrected2 <- list.files(path = corrected.folder,
                               recursive = TRUE)
 list.corrected2
 
-u2 <- list.corrected[1]
+# u2 <- list.corrected[1]
 
 ## Rename corrected files
 registerDoParallel(cl <- makeCluster(ncores))
